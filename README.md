@@ -7,5 +7,9 @@
 - https://github.com/safooray/scratch_pad/blob/master/custom_gradients/custom_gradient_with_python.py
 
 
-## download sample tfrecord files from
+## Dataset
+- MINC-2500
+
+
+## Download sample tfrecord files from
 - https://drive.google.com/drive/folders/1SMF3wYeZ2hEkawLEoSLbaD_V0gOdwiZe?usp=sharing
