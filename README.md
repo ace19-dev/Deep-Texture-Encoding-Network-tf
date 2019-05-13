@@ -1,4 +1,4 @@
-# Deep-Texture-Encoding-Network-TF
+# Deep-Texture-Encoding-Network-TF (in progress)
 
 
 ## References from
