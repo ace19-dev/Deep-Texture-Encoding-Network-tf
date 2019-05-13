@@ -54,7 +54,9 @@ class Dataset(object):
 
         # Convert from a scalar string tensor to a float32 tensor with shape
         image_decoded = tf.image.decode_png(features['image/encoded'], channels=3)
-        image = tf.image.resize_images(image_decoded, [self.resize_h, self.resize_w])
+        image = tf.image.resize_image_with_pad(image_decoded,
+                                               self.resize_h,
+                                               self.resize_w)
 
         # Convert label from a scalar uint8 tensor to an int32 scalar.
         label = tf.cast(features['image/label'], tf.int64)

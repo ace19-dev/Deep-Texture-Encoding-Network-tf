@@ -223,7 +223,7 @@ def main(unused_argv):
             train_record_filenames = os.path.join(FLAGS.dataset_dir, 'train.record')
             validate_record_filenames = os.path.join(FLAGS.dataset_dir, 'validate.record')
             ##################
-            # Training loop.
+            # training loop.
             ##################
             for num_epoch in range(start_epoch, FLAGS.how_many_training_epochs):
                 tf.logging.info('--------------------------')
@@ -233,21 +233,18 @@ def main(unused_argv):
                 sess.run(iterator.initializer, feed_dict={tfrecord_filenames: train_record_filenames})
                 for step in range(train_batches):
                     train_batch_xs, train_batch_ys = sess.run(next_batch)
-                    # TODO: make verify_image func.
-                    # # assert not np.any(np.isnan(train_batch_xs))
+                    # # TODO: make verify_image func.
+                    # # # assert not np.any(np.isnan(train_batch_xs))
                     # n_batch = train_batch_xs.shape[0]
-                    # n_view = train_batch_xs.shape[1]
                     # for i in range(n_batch):
-                    #     for j in range(n_view):
-                    #         img = train_batch_xs[i][j]
-                    #         # scipy.misc.toimage(img).show()
-                    #         # Or
-                    #         img = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_BGR2RGB)
-                    #         cv2.imwrite('/home/ace19/Pictures/' + str(i) +
-                    #                     '_' + str(j) + '.png', img)
-                    #         # cv2.imshow(str(train_batch_ys[idx]), img)
-                    #         cv2.waitKey(100)
-                    #         cv2.destroyAllWindows()
+                    #     img = train_batch_xs[i]
+                    #     # scipy.misc.toimage(img).show()
+                    #     # Or
+                    #     img = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_BGR2RGB)
+                    #     cv2.imwrite('/home/ace19/Pictures/' + str(i) + '.png', img)
+                    #     # cv2.imshow(str(train_batch_ys[idx]), img)
+                    #     cv2.waitKey(100)
+                    #     cv2.destroyAllWindows()
 
                     lr, train_summary, train_accuracy, train_loss, grad_vals, _ = \
                         sess.run([learning_rate, summary_op, accuracy, total_loss, grad_summ_op, train_op],
@@ -260,9 +257,9 @@ def main(unused_argv):
                     tf.logging.info('Epoch #%d, Step #%d, rate %.10f, accuracy %.1f%%, loss %f' %
                                     (num_epoch, step, lr, train_accuracy * 100, train_loss))
 
-                ###################################################
-                # TODO: Validate the model on the validation set
-                ###################################################
+                #################
+                # validation
+                #################
                 tf.logging.info('--------------------------')
                 tf.logging.info(' Start validation ')
                 tf.logging.info('--------------------------')

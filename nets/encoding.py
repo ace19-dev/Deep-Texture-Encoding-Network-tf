@@ -59,18 +59,12 @@ def encoding_layer(X, D, K):
     :return: E (residual encoding vectors - B X K X D)
 
     Shape:
-    Input: B×N×D or B×H×WxD (where B is batch, N is total number of features Or H×W.)
+    Input: B×H×WxD (where B is batch, N is total number of features Or H×W.)
     Output: B×K×D
 
     Variables:
     self.codewords (Tensor) – the learnable codewords of shape (K×D)
     self.scale (Tensor) – the learnable scale factor of visual centers
-
-    Examples:
-        B,C,H,W,K = 2,3,4,5,6
-        X = Variable(torch.cuda.DoubleTensor(B,C,H,W).uniform_(-0.5,0.5), requires_grad=True)
-        layer = encoding.Encoding(C,K).double().cuda()
-        E = layer(X)
     """
     global batch_size
     batch_size = X.get_shape().as_list()[0]
@@ -91,7 +85,6 @@ def encoding_layer(X, D, K):
         raise RuntimeError('Encoding Layer unknown input dims!')
 
     E = encoding_op(python_func, [x, codewords, scale], grad_func, name=OP_NAME)
-    # E = encoding(x, codewords, scale)
     return E
 
 
