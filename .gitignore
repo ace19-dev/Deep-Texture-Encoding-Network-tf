@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+*.pyc
+models/
+pre-trained/
+test/
+dataset_tools/
