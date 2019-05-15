@@ -38,7 +38,7 @@ flags.DEFINE_integer('learning_rate_decay_step', 6000,
                      'Decay the base learning rate at a fixed step.')
 flags.DEFINE_float('learning_power', 0.9,
                    'The power value used in the poly learning policy.')
-flags.DEFINE_integer('training_number_of_steps', 300000,
+flags.DEFINE_integer('training_number_of_steps', 30000,
                      'The number of steps used for training')
 flags.DEFINE_float('momentum', 0.9, 'The momentum value to use')
 flags.DEFINE_integer('slow_start_step', 1000,
@@ -49,31 +49,6 @@ flags.DEFINE_float('slow_start_learning_rate', 1e-4,
 # Settings for training strategy.
 flags.DEFINE_enum('learning_policy', 'poly', ['poly', 'step'],
                   'Learning rate policy for training.')
-
-# Settings for fine-tuning the network.
-flags.DEFINE_string('saved_checkpoint_dir',
-                    None,
-                    'Saved checkpoint dir.')
-flags.DEFINE_string('pre_trained_checkpoint',
-                    None,
-                    'The pre-trained checkpoint in tensorflow format.')
-flags.DEFINE_string('checkpoint_exclude_scopes',
-                    None,
-                    'Comma-separated list of scopes of variables to exclude '
-                    'when restoring from a checkpoint.')
-flags.DEFINE_string('trainable_scopes',
-                    None,
-                    'Comma-separated list of scopes to filter the set of variables '
-                    'to train. By default, None would train all the variables.')
-flags.DEFINE_string('checkpoint_model_scope',
-                    None,
-                    'Model scope in the checkpoint. None if the same as the trained model.')
-flags.DEFINE_string('model_name',
-                    'resnet_v2_34',
-                    'The name of the architecture to train.')
-flags.DEFINE_boolean('ignore_missing_vars',
-                     False,
-                     'When restoring a checkpoint would ignore missing variables.')
 
 flags.DEFINE_string('dataset_dir',
                     '/home/ace19/dl_data/minc-2500',
@@ -100,7 +75,6 @@ def main(unused_argv):
     num_classes = len(labels)
 
     tf.gfile.MakeDirs(FLAGS.train_logdir)
-    tf.logging.info('Creating train logdir: %s', FLAGS.train_logdir)
 
     with tf.Graph().as_default() as graph:
         global_step = tf.train.get_or_create_global_step()
@@ -110,17 +84,8 @@ def main(unused_argv):
                            name='X')
         ground_truth = tf.placeholder(tf.int64, [None], name='ground_truth')
         is_training = tf.placeholder(tf.bool, name='is_training')
-        # dropout_keep_prob = tf.placeholder(tf.float32)
-        # learning_rate = tf.placeholder(tf.float32, [], name='lr')
 
         logits = model.ten(X, num_classes, is_training, FLAGS.batch_size)
-
-        # Print name and shape of parameter nodes  (values not yet initialized)
-        tf.logging.info("++++++++++++++++++++++++++++++++++")
-        tf.logging.info("Parameters")
-        tf.logging.info("++++++++++++++++++++++++++++++++++")
-        for v in slim.get_model_variables():
-            tf.logging.info('name = %s, shape = %s' % (v.name, v.get_shape()))
 
         # Define loss
         tf.losses.sparse_softmax_cross_entropy(labels=ground_truth, logits=logits)
@@ -199,16 +164,6 @@ def main(unused_argv):
             sess.run(tf.global_variables_initializer())
 
             saver = tf.train.Saver()
-            if FLAGS.saved_checkpoint_dir:
-                if tf.gfile.IsDirectory(FLAGS.train_logdir):
-                    checkpoint_path = tf.train.latest_checkpoint(FLAGS.train_logdir)
-                else:
-                    checkpoint_path = FLAGS.train_logdir
-                saver.restore(sess, checkpoint_path)
-
-            # if FLAGS.pre_trained_checkpoint is not None
-            if FLAGS.pre_trained_checkpoint:
-                train_utils.restore_fn(FLAGS)
 
             start_epoch = 0
             train_batches = int(MINC2500_TRAIN_DATA_SIZE / FLAGS.batch_size)
@@ -226,26 +181,11 @@ def main(unused_argv):
             # training loop.
             ##################
             for num_epoch in range(start_epoch, FLAGS.how_many_training_epochs):
-                tf.logging.info('--------------------------')
                 tf.logging.info(' Epoch %d' % num_epoch)
-                tf.logging.info('--------------------------')
 
                 sess.run(iterator.initializer, feed_dict={tfrecord_filenames: train_record_filenames})
                 for step in range(train_batches):
                     train_batch_xs, train_batch_ys = sess.run(next_batch)
-                    # # TODO: make verify_image func.
-                    # # # assert not np.any(np.isnan(train_batch_xs))
-                    # n_batch = train_batch_xs.shape[0]
-                    # for i in range(n_batch):
-                    #     img = train_batch_xs[i]
-                    #     # scipy.misc.toimage(img).show()
-                    #     # Or
-                    #     img = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_BGR2RGB)
-                    #     cv2.imwrite('/home/ace19/Pictures/' + str(i) + '.png', img)
-                    #     # cv2.imshow(str(train_batch_ys[idx]), img)
-                    #     cv2.waitKey(100)
-                    #     cv2.destroyAllWindows()
-
                     lr, train_summary, train_accuracy, train_loss, grad_vals, _ = \
                         sess.run([learning_rate, summary_op, accuracy, total_loss, grad_summ_op, train_op],
                                  feed_dict={X: train_batch_xs,
@@ -260,9 +200,7 @@ def main(unused_argv):
                 #################
                 # validation
                 #################
-                tf.logging.info('--------------------------')
                 tf.logging.info(' Start validation ')
-                tf.logging.info('--------------------------')
                 # Reinitialize iterator with the validation dataset
                 sess.run(iterator.initializer, feed_dict={tfrecord_filenames: validate_record_filenames})
                 total_val_accuracy = 0
@@ -277,7 +215,6 @@ def main(unused_argv):
                         feed_dict={
                             X: validation_batch_xs,
                             ground_truth: validation_batch_ys,
-                            # learning_rate: FLAGS.base_learning_rate,
                             is_training: False
                         })
 

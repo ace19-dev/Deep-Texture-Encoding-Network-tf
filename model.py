@@ -127,9 +127,9 @@ def ten(inputs,
                       normalizer_params=batch_norm_params,
                       scope='projection')
     with tf.variable_scope('encoding'):
-        layer = encoding.EncodingLayer(D=DIMENSION, K=NUM_CODEWORDS)
-        enc = layer(net)
-        # enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
+        # layer = encoding.EncodingLayer(D=DIMENSION, K=NUM_CODEWORDS)
+        # enc = layer(net)
+        enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
     net = tf.reshape(enc, [-1, NUM_CODEWORDS*DIMENSION], name='reshape_after_encoding')
     net = tf.math.l2_normalize(net, axis=1, name='l2_norm')
     logits = slim.fully_connected(net, num_classes, activation_fn=None, scope='logits')
