@@ -81,7 +81,7 @@ flags.DEFINE_string('dataset_dir',
 
 flags.DEFINE_integer('how_many_training_epochs', 120,
                      'How many training loops to run')
-flags.DEFINE_integer('batch_size', 32, 'batch size')
+flags.DEFINE_integer('batch_size', 16, 'batch size')
 flags.DEFINE_integer('resize_height', 320, 'resize_height')
 flags.DEFINE_integer('resize_width', 320, 'resize_width')
 flags.DEFINE_string('labels',

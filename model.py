@@ -118,7 +118,6 @@ def ten(inputs,
     ############
     # Deep TEN
     ############
-    # end_points = {}
     batch_norm_params['is_training'] = is_training
     net = slim.conv2d(net, DIMENSION, [1, 1],
                       weights_regularizer=slim.l2_regularizer(0.0001),  # weight_decay
@@ -129,7 +128,9 @@ def ten(inputs,
                       scope='projection')
     # end_points['projection'] = net
     with tf.variable_scope('encoding'):
-        enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
+        layer = encoding.EncodingLayer(D=DIMENSION, K=NUM_CODEWORDS)
+        enc = layer(net)
+        # enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
     # end_points['encoding_layer'] = net
     net = tf.reshape(enc, [-1, NUM_CODEWORDS*DIMENSION], name='reshape_after_encoding')
     # end_points['reshape'] = net
