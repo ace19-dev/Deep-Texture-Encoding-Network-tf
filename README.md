@@ -3,8 +3,8 @@
 
 ## References from
 - https://arxiv.org/pdf/1612.02844.pdf
-- https://github.com/jiaxue1993/Deep-Encoding-Pooling-Network-DEP-
 - https://github.com/safooray/scratch_pad/blob/master/custom_gradients/custom_gradient_with_python.py
+- https://github.com/ace19-dev/models/tree/master/official/resnet
 
 
 ## Dataset
