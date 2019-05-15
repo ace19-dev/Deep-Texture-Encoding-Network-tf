@@ -34,8 +34,6 @@ import tensorflow as tf
 slim = tf.contrib.slim
 
 
-# OP_NAME_SCALED_L2 = 'scaled_l2'
-# OP_NAME_AGGREGATE = 'aggregate'
 OP_NAME = 'encoding_op'
 
 
@@ -91,7 +89,6 @@ def encoding_layer(X, D, K):
         raise RuntimeError('Encoding Layer unknown input dims!')
 
     E = encoding_op(python_func, [x, codewords, scale], grad_func, name=OP_NAME)
-    # E = encoding(x, codewords, scale)
     return E
 
 
@@ -136,10 +133,6 @@ def encoding(X, C, S):
 
 
     a = tf.expand_dims(A, axis=3)
-    # x = tf.broadcast_to(tf.expand_dims(X, axis=2),
-    #                     [batch_size, X.shape[1], C.shape[0], C.shape[1]])
-    # c = tf.expand_dims(tf.expand_dims(C, axis=0), axis=0)
-
     E = tf.reduce_sum(tf.multiply(a, tf.subtract(x, c)), axis=1, name='encoding_vectors')
 
     return E
@@ -151,36 +144,22 @@ def grad_func(op, gradE, tmp1, tmp2, tmp3):
     C = op.inputs[2]
     S = op.inputs[3]
 
-    # gradA = (gradE.unsqueeze(1) *
-    #           (X.unsqueeze(2).expand({X.size(0), X.size(1), C.size(0), C.size(1)}) -
-    #            C.unsqueeze(0).unsqueeze(0))).sum(3);
     e = tf.expand_dims(gradE, axis=1)
     x = tf.broadcast_to(tf.expand_dims(X, axis=2),
                         [batch_size, X.shape[1], C.shape[0], C.shape[1]])
     c = tf.expand_dims(tf.expand_dims(C, axis=0), axis=0)
     gradSL = tf.reduce_sum(tf.multiply(e, tf.subtract(x, c)), axis=3)
 
-    # gradX = at::bmm(A, gradE); -> Batch matrix multiplication
-    gradX = tf.matmul(A, gradE)
-    # gradC = (-gradE * A.sum(1).unsqueeze(2)).sum(0);
+    gradX = tf.matmul(A, gradE) # Batch matrix multiplication
     a = tf.expand_dims(tf.reduce_sum(A, axis=1), axis=2)
     gradC = tf.reduce_sum(tf.multiply(-gradE, a), axis=0)
 
-    # tmp = (2 * gradSL * S.view({1, 1, C.size(0)})).unsqueeze(3) * \
-    #       (X.unsqueeze(2).expand({X.size(0), X.size(1), C.size(0), C.size(1)}) -
-    #        C.unsqueeze(0).unsqueeze(0));
     s = tf.reshape(S, [1, 1, C.shape[0]])
     t = tf.expand_dims((2 * gradSL * s), axis=3)
-    # x = tf.broadcast_to(tf.expand_dims(X, axis=2),
-    #                     [batch_size, X.shape[1], C.shape[0], C.shape[1]])
-    # c = tf.expand_dims(tf.expand_dims(C, axis=0), axis=0)
     tmp = tf.multiply(t, tf.subtract(x, c))
 
-    # GX = tmp.sum(2);
     GX = tf.multiply(tf.reduce_sum(tmp, axis=2), gradX)
-    # GC = tmp.sum(0).sum(0);
     GC = tf.multiply(tf.reduce_sum(tf.reduce_sum(tmp, axis=0), axis=0), gradC)
-    # GS = (gradSL * (SL / S.view({1, 1, C.size(0)}))).sum(0).sum(0);
     GS = tf.reduce_sum(tf.reduce_sum(tf.multiply(gradSL, tf.divide(A, s)), axis=0), axis=0)
 
     return None, GX, GC, GS
