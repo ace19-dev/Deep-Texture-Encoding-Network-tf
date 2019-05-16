@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from nets import encoding, resnet_model
+from nets import encoding, encoding_tf_custom_gradient, resnet_model
 
 import tensorflow as tf
 
@@ -115,9 +115,6 @@ def ten(inputs,
     with tf.variable_scope(scope, 'ten', [inputs], reuse=reuse):
         net = model(inputs, training=is_training)
 
-    ############
-    # Deep TEN
-    ############
     batch_norm_params['is_training'] = is_training
     net = slim.conv2d(net, DIMENSION, [1, 1],
                       weights_regularizer=slim.l2_regularizer(0.0001),  # weight_decay
@@ -127,11 +124,10 @@ def ten(inputs,
                       normalizer_params=batch_norm_params,
                       scope='projection')
     with tf.variable_scope('encoding'):
-        # layer = encoding.EncodingLayer(D=DIMENSION, K=NUM_CODEWORDS)
-        # enc = layer(net)
-        enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
-    net = tf.reshape(enc, [-1, NUM_CODEWORDS*DIMENSION], name='reshape_after_encoding')
-    net = tf.math.l2_normalize(net, axis=1, name='l2_norm')
+        # enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
+        enc = encoding_tf_custom_gradient.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
+    net = tf.reshape(enc, [-1, NUM_CODEWORDS*DIMENSION])
+    net = tf.math.l2_normalize(net, axis=1)
     logits = slim.fully_connected(net, num_classes, activation_fn=None, scope='logits')
 
     return logits
