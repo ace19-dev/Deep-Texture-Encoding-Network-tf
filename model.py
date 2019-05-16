@@ -125,6 +125,7 @@ def ten(inputs,
                       scope='projection')
     with tf.variable_scope('encoding'):
         # enc = encoding.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
+        net = tf.reshape(net, [-1, net.shape[1] * net.shape[2], net.shape[3]])
         enc = encoding_tf_custom_gradient.encoding_layer(net, D=DIMENSION, K=NUM_CODEWORDS)
     net = tf.reshape(enc, [-1, NUM_CODEWORDS*DIMENSION])
     net = tf.math.l2_normalize(net, axis=1)

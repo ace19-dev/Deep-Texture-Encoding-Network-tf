@@ -82,22 +82,22 @@ def encoding_layer(inputs, D, K):
                                 initializer=tf.random_uniform(shape=(K,), minval=-1, maxval=0),
                                 regularizer=slim.l2_regularizer(0.05))
 
-    if inputs.get_shape().ndims == 4:
-        # BxHxWxD => Bx(HW)xD (BxNxD)
-        X = tf.reshape(inputs, [-1, inputs.shape[1] * inputs.shape[2], inputs.shape[3]], name='input')
-    else:
-        raise RuntimeError('Encoding Layer unknown input dims!')
+    # if inputs.get_shape().ndims == 4:
+    #     # BxHxWxD => Bx(HW)xD (BxNxD)
+    #     X = tf.reshape(inputs, [-1, inputs.shape[1] * inputs.shape[2], inputs.shape[3]], name='input')
+    # else:
+    #     raise RuntimeError('Encoding Layer unknown input dims!')
 
 
-    return encoding(X, codewords, scale)
+    return encoding(inputs, codewords, scale)
 
 
 @tf.custom_gradient
 def encoding(X, C, S):
     '''
-    :param X:
-    :param C:
-    :param S:
+    :param X: inputs
+    :param C: codewords
+    :param S: scale
     :return E (N residual encoding vectors, B X K X D)
     '''
 
@@ -127,10 +127,10 @@ def encoding(X, C, S):
         t = tf.expand_dims((2 * gradSL * s), axis=3)
         tmp = tf.multiply(t, tf.subtract(x, c))
 
-        GX = tf.multiply(tf.reduce_sum(tmp, axis=2), gradX)
-        GC = tf.multiply(tf.reduce_sum(tf.reduce_sum(tmp, axis=0), axis=0), gradC)
+        GX = tf.reduce_sum(tmp, axis=2)
+        GC = tf.reduce_sum(tf.reduce_sum(tmp, axis=0), axis=0)
         GS = tf.reduce_sum(tf.reduce_sum(tf.multiply(gradSL, tf.divide(A, s)), axis=0), axis=0)
 
-        return GX, GC, GS   # <- Is it correct to return this value?
+        return GX, GC, GS  # <- Is it correct to return this value?
 
     return E, grad
