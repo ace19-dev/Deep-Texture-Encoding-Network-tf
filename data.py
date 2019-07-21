@@ -7,6 +7,10 @@ import tensorflow as tf
 import random
 
 
+MEAN=[0.485, 0.456, 0.406]
+STD=[0.229, 0.224, 0.225]
+
+
 class Dataset(object):
     """
     Wrapper class around the new Tensorflows dataset pipeline.
@@ -81,5 +85,6 @@ class Dataset(object):
 
     def normalize(self, image, label):
         # """Convert `image` from [0, 255] -> [-0.5, 0.5] floats."""
-        image = tf.cast(image, tf.float32) * (1. / 255) - 0.5
-        return image, label
+        # image = tf.cast(image, tf.float32) * (1. / 255) - 0.5
+
+        return tf.div(tf.subtract(image, MEAN), STD), label
